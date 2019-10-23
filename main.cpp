@@ -12,6 +12,10 @@ namespace
 	struct point_t
 	{
 		int x, y;
+		
+		inline bool operator==(point_t p) {
+			return p.x == x && p.y == y;
+		}
 	};
 
 	struct grid_t
@@ -98,22 +102,29 @@ namespace
 			// Check if target has been reached
 			if (current_pos.x == grid.target.x && current_pos.y == grid.target.y) break;
 
-			point_t neighbors[] = {
-				(current_pos.x, current_pos.y + 1),
-				(current_pos.x + 1, current_pos.y),
-				(current_pos.x, current_pos.y - 1),
-				(current_pos.x - 1, current_pos.y)
-			};
+			point_t up		= { current_pos.x, current_pos.y + 1 };
+			point_t right	= { current_pos.x + 1, current_pos.y };
+			point_t down	= { current_pos.x, current_pos.y - 1 };
+			point_t left	= { current_pos.x - 1, current_pos.y };
 
-			for (int i = 0; i < 4; i++)
+			vector<point_t> neighbors	= { up, right, down, left};
+
+			for (int i = 0; i < neighbors.size(); i++)
 			{
-				if (grid.index_of(neighbors[i]) == grid.empty)
-					if (find(closed_set.begin(), closed_set.end(), neighbors[i]) != closed_set.end())
-						if (find(open_set.begin(), open_set.end(), neighbors[i]) != open_set.end())
+				int index = grid.index_of(neighbors[i]);
+				if (index < grid.cells.size() && grid.cells[index] == grid.empty)
+				{
+					vector<point_t>::iterator it = find(closed_set.begin(), closed_set.end(), neighbors[i]); 
+					if (it == closed_set.end())
+					{
+						it = find(open_set.begin(), open_set.end(), neighbors[i]);
+						if (it == open_set.end())
 							open_set.push_back(neighbors[i]);
+					}	
+				}
 			}
 			
-			// Remove current node
+			// Remove current node v
 			open_set.erase(open_set.begin());
 			
 			// Add current node to path
