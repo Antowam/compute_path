@@ -4,6 +4,7 @@
 #include <numeric>
 #include <string>
 #include <vector>
+#include <queue>          
 
 using namespace std;
 
@@ -89,7 +90,7 @@ namespace
 		return true;
 	}
 
-	vector<point_t> compute_path(grid_t const & grid)
+	vector<point_t> flood_fill(grid_t const & grid)
 	{
 		vector<point_t> open_set;
 		vector<point_t> closed_set;
@@ -107,7 +108,7 @@ namespace
 			point_t down	= { current_pos.x, current_pos.y - 1 };
 			point_t left	= { current_pos.x - 1, current_pos.y };
 
-			vector<point_t> neighbors	= { up, right, down, left};
+			vector<point_t> neighbors = { up, right, down, left };
 
 			for (int i = 0; i < neighbors.size(); i++)
 			{
@@ -134,8 +135,33 @@ namespace
 			if(!open_set.empty())
 			current_pos = open_set.front();
 		}
-
 		return closed_set;
+	}
+
+	vector<point_t> priority_search(grid_t const& grid)
+	{
+		vector<point_t> path;
+		vector<point_t> previous(grid.cells.size());
+		vector<bool> visited(grid.cells.size(), false);
+		
+		point_t directions[4] = { 
+			{1,0}, 
+			{0,1},
+			{-1,0},
+			{0,-1}
+		};
+
+		point_t current = grid.target;
+		priority_queue<pair<float, int>> next;
+		next.push(grid.index_of(current));
+
+		while (!next.empty())
+		{
+
+
+
+		}
+		return path;
 	}
 
 	int ReturnAbsoluteValue(int val)
@@ -260,7 +286,9 @@ int main(int argc, char const * const * const argv)
 			return -1;
 	}
 
-	vector<point_t> path = compute_path(grid);
+	vector<point_t> path = flood_fill(grid);
+	//vector<point_t> path = priority_search(grid);
+
 
 	print_path(cout, grid, path);
 
