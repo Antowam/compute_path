@@ -138,13 +138,24 @@ namespace
 		return closed_set;
 	}
 
+	point_t get_point_from_index(int i, int w)
+	{
+		point_t point = { i % w, i / w };
+		return point;
+	}
+
+	int calculate_heuristic(point_t start, point_t target)
+	{
+		return abs(start.x - target.x) + abs(start.y - target.y);
+	}
+
 	vector<point_t> priority_search(grid_t const& grid)
 	{
 		vector<point_t> path;
 		vector<point_t> previous(grid.cells.size());
 		vector<bool> visited(grid.cells.size(), false);
 		
-		point_t directions[4] = { 
+		vector<point_t> directions { 
 			{1,0}, 
 			{0,1},
 			{-1,0},
@@ -152,21 +163,41 @@ namespace
 		};
 
 		point_t current = grid.target;
-		priority_queue<pair<float, int>> next;
-		next.push(grid.index_of(current));
+		priority_queue<pair<int, int>> next;
+		next.push(make_pair(calculate_heuristic(current, grid.start), grid.index_of(current)));
 
 		while (!next.empty())
 		{
+			current = get_point_from_index(next.top().second, grid.width);
+			next.pop();
+			visited[grid.index_of(current)] = true;
 
+			if (grid.index_of(current) == grid.index_of(grid.start))
+			{
+				while (grid.index_of(current) != grid.index_of(grid.target))
+				{
+					point_t came_from = previous[grid.index_of(current)];
+					path.push_back(came_from);
+					current = came_from;
+				}
 
+				return path;
+			}
+			
+			for (int i = 0; i < 4; i++)
+			{
+				point_t neighbor = { current.x + directions[i].x, current.y + directions[i].y };
+				if (grid.cells[grid.index_of(neighbor)] == grid.wall || visited[grid.index_of(neighbor)] == true)
+					continue;
+
+				previous[grid.index_of(neighbor)] = current;
+				visited[grid.index_of(neighbor)] = true;
+				next.push(make_pair(calculate_heuristic(neighbor, grid.start), grid.index_of(neighbor)));
+			}
 
 		}
-		return path;
-	}
 
-	int ReturnAbsoluteValue(int val)
-	{
-		return abs(val);
+		return path;
 	}
 
 	struct intersection_t
@@ -286,8 +317,8 @@ int main(int argc, char const * const * const argv)
 			return -1;
 	}
 
-	vector<point_t> path = flood_fill(grid);
-	//vector<point_t> path = priority_search(grid);
+	//vector<point_t> path = flood_fill(grid);
+	vector<point_t> path = priority_search(grid);
 
 
 	print_path(cout, grid, path);
